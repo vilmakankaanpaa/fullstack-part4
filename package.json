@@ -1,0 +1,27 @@
+{
+  "name": "bloglist",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint ."
+  },
+  "author": "Vilma Kankaanpää",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "mongoose": "^6.0.10",
+    "mongoose-unique-validator": "^3.0.0",
+    "morgan": "^1.10.0",
+    "node-uuid": "^1.4.8"
+  },
+  "devDependencies": {
+    "eslint": "^8.0.1",
+    "nodemon": "^2.0.13"
+  }
+}
