@@ -45,6 +45,28 @@ describe('api tests', () => {
     expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length + 1)
   }, 100000)
 
+  test('likes default to 0 when missing', async () => {
+    const newBlog = {
+      _id: '5a493ac71b54a676234d17f8',
+      title: 'Test blog 2',
+      author: 'Edsger W. Dijkstra',
+      url: 'http://www.someurl.com'
+    }
+
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+
+    const resultBlog = await api
+      .get(`/api/blogs/${newBlog._id}`)
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+      
+    expect(resultBlog.body.likes).toBe(0)  
+  })
+
   afterAll(() => {
     mongoose.connection.close()
   })
