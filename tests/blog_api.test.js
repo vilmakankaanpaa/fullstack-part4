@@ -63,8 +63,25 @@ describe('api tests', () => {
       .get(`/api/blogs/${newBlog._id}`)
       .expect(200)
       .expect('Content-Type', /application\/json/)
-      
+
     expect(resultBlog.body.likes).toBe(0)  
+  })
+
+  test('blog cannot be added without title or url', async () => {
+    const newBlog = {
+      _id: '5a493ac71b54a676234d17f8',
+      author: 'Edsger W. Dijkstra',
+      liks: 0
+    }
+
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(400)
+
+    const blogsAtEnd = await helper.blogsInDb()
+
+    expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length)
   })
 
   afterAll(() => {
