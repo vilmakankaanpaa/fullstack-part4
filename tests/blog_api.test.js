@@ -84,6 +84,17 @@ describe('api tests', () => {
     expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length)
   })
 
+  test('deleting blog succesfully', async () => {
+    const blogsAtStart = await helper.blogsInDb()
+    const blogToRemove = blogsAtStart[0]
+    await api
+      .delete(`/api/blogs/${blogToRemove.id}`)
+      .expect(204)
+
+    const blogsAtEnd = await helper.blogsInDb()
+    expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length - 1)
+  })
+
   afterAll(() => {
     mongoose.connection.close()
   })
