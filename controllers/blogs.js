@@ -1,6 +1,7 @@
 const blogsRouter = require('express').Router()
 const Blog = require('../models/blog')
 const User = require('../models/user')
+const jwt = require('jsonwebtoken')
 
 blogsRouter.get('/', async (request, response) => {
   const blogs = await Blog
@@ -10,38 +11,49 @@ blogsRouter.get('/', async (request, response) => {
   response.json(blogs)
 })
 
+const getTokenFrom = request => {
+  const authorization = request.get('authorization')
+  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
+    return authorization.substring(7)
+  }
+  return null
+}
+
 blogsRouter.post('/', async (request, response) => {
   const body = request.body
   
-  if (body.title && body.url) {
-
-    const users = await User.find({})
-    console.log(users)
-
-    const blog = new Blog({
-      _id: body._id,
-      title: body.title,
-      author: body.author,
-      url: body.url,
-      likes: body.likes || 0,
-      user: users[0]
-    })
-    const savedBlog = await blog.save()
-
-    // Add the blog to the user's blogs
-    const currentUser = users[0]
-    const user = {
-      username: currentUser.username,
-      name: currentUser.name,
-      blogs: currentUser.blogs.concat(blog)
-    }
-    await User.findByIdAndUpdate(currentUser.id, user, { new: true })
-  
-    response.json(savedBlog)
-
-  } else {
-    response.status(400).end()
+  if (!body.title || !body.url) {
+    return response.status(400).json({ error: 'title or url missing' })
   }
+
+  const token = getTokenFrom(request)
+  if (!token){
+    return response.status(401).json({error: 'token missing'})
+  }
+  const decodedToken = jwt.verify(token, process.env.SECRET)
+  if (!token || !decodedToken.id) {
+    return response.status(401).json({ error: 'token invalid' })
+  }
+  const user = await User.findById(decodedToken.id)
+
+  const blog = new Blog({
+    _id: body._id,
+    title: body.title,
+    author: body.author,
+    url: body.url,
+    likes: body.likes || 0,
+    user: user._id
+  })
+  const savedBlog = await blog.save()
+
+  const updatedUser = {
+    username: user.username,
+    name: user.name,
+    blogs: user.blogs.concat(blog)
+  }
+  await User.findByIdAndUpdate(user._id, updatedUser, { new: true })
+
+  response.json(savedBlog)
 })
 
 blogsRouter.get('/:id', async (request, response) => {
