@@ -19,7 +19,7 @@ const tokenExtractor = (request, response, next) => {
   next()
 }
 
-const userExtractor = (request, response, next) => {
+const userExtractor = async (request, response, next) => {
 
   if (!request.token) {
     return response.status(401).send({error: 'authorization token missing'})
@@ -28,7 +28,11 @@ const userExtractor = (request, response, next) => {
   if (!decodedToken.id) {
     return response.status(401).json({ error: 'token invalid' })
   }
-  request.user = User.findById(decodedToken.id)
+  request.user = await User.findById(decodedToken.id)
+
+  if (!request.user._id) {
+    return response.status(401).json({ error: 'Extractor: could not find user' })
+  }
   next()
 }
 
